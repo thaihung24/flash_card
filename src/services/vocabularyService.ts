@@ -11,6 +11,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { CardDocument } from "../types/card";
 import { VocabularyDocument, VocabularyImportData } from "../types/vocabulary";
 
 const COLLECTION_NAME = "vocabulary";
@@ -378,26 +379,30 @@ export class VocabularyService {
   static async getVocabulariesByCategoryAndLevel(
     category: string,
     jlptLevel: string
-  ): Promise<VocabularyDocument[]> {
+  ): Promise<CardDocument[]> {
     try {
       console.log(
         `🔍 Fetching vocabulary for category: ${category}, level: ${jlptLevel}`
       );
       const q = query(
         collection(db, COLLECTION_NAME),
-        where("isActive", "==", true),
-        where("jlptLevel", "==", jlptLevel),
-        where("category", "==", category)
+        where("jlpt", "==", jlptLevel),
+        where("pos", "==", category)
       );
       
       const snapshot = await getDocs(q);
       const vocabularies = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
-      })) as VocabularyDocument[];
+        kanji: doc.data().kanji,
+        kana: doc.data().kana,
+        romaji: doc.data().romaji,
+        meaning_vi: doc.data().meaning_vi,
+        pos: doc.data().pos,
+        notes: doc.data().notes,
+      })) as CardDocument[];
 
       console.log(
-        `📚 Found ${vocabularies.length} vocabulary items for category "${category}" and level "${jlptLevel}" ${vocabularies}`
+        `📚 Found ${vocabularies.length} vocabulary items for category "${category}" and level "${jlptLevel} ${JSON.stringify(vocabularies)}"`
       );
       return vocabularies;
     } catch (error) {

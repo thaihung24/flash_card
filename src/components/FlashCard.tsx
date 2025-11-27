@@ -6,28 +6,28 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import React, { useEffect, useState } from "react";
 import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  interpolate,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
+    interpolate,
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
 } from "react-native-reanimated";
 
 import {
-  BORDER_RADIUS,
-  COLORS,
-  FONTS,
-  SHADOWS,
-  SPACING,
+    BORDER_RADIUS,
+    COLORS,
+    FONTS,
+    SHADOWS,
+    SPACING,
 } from "../constants/theme";
 import { FlashCard, SwipeDirection } from "../types";
 
@@ -80,8 +80,8 @@ export const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
       front: card.front,
       back: card.back,
       reading: card.reading,
-      showBack: showBack,
       isFlipped: isFlipped,
+      showBack: showBack
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card.id]);

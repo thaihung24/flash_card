@@ -8,38 +8,55 @@ import * as Speech from "expo-speech";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StatusBar, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { FlashCardComponent } from "../components/FlashCard";
 import { COLORS, FONTS, SHADOWS, SPACING } from "../constants/theme";
-import { sampleDecks, shuffleCards } from "../data/sampleData";
-import { VocabularyService } from "../services/vocabularyService";
+import { shuffleCards } from "../data/sampleData";
 import {
   CardProgress,
-  Deck,
+  DifficultyLevel,
   FlashCard,
   StudyResult,
   SwipeDirection,
 } from "../types";
+import { VocabularyDocument } from "../types/vocabulary";
 import { srsAlgorithm } from "../utils/srsAlgorithm";
 
-export default function FlashCardStudyScreen() {
+export default function SimpleFlashCardStudyScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  
-  // Parse deck from params or use default
-  const getDeck = (): Deck => {
-    if (params.deck && typeof params.deck === "string") {
+  const getCardList = (): FlashCard[] => {
+    console.log("🚀 getCardList called with params.vocabulary:", params.vocabulary);
+    
+    // Parse vocabulary from params if it's a string
+    let vocabularyList = params.vocabulary;
+    if (typeof params.vocabulary === 'string') {
       try {
-        return JSON.parse(params.deck);
-      } catch (e) {
-        console.log("Failed to parse deck:", e);
+        vocabularyList = JSON.parse(params.vocabulary);
+      } catch (error) {
+        console.error("❌ Failed to parse vocabulary JSON:", error);
+        return [];
       }
     }
-    // Return first deck as default
-    return sampleDecks[0];
+    
+    // Check if it's an array and map to FlashCard format
+    if (vocabularyList && Array.isArray(vocabularyList)) {
+      console.log("✅ Found vocabulary array with", vocabularyList.length, "items");
+      return (vocabularyList as unknown as VocabularyDocument[]).map((item: VocabularyDocument, index: number) => ({
+        id: item.id || index.toString(),
+        front: item.kanji || item.kana || '', // Japanese text
+        back: item.meaning_vi || '', // Vietnamese meaning
+        reading: item.romaji || item.kana || '', // Reading
+        audio: '', // No audio for now
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        tags: [item.jlpt || 'N5', item.pos || 'unknown'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
+    }
+    
+    console.log("⚠️ No valid vocabulary data found");
+    return [];
   };
-
-  const deck = getDeck();
 
   // State
   const [cards, setCards] = useState<FlashCard[]>([]);
@@ -58,20 +75,35 @@ export default function FlashCardStudyScreen() {
 
   // Initialize study session
   useEffect(() => {
-    const initializeSession = () => {
-      const shuffledCards = shuffleCards(deck.cards);
-      const cardList = VocabularyService.getVocabulariesByCategoryAndLevel('','');
-      setCards(cardList);
+    const initializeSession = async () => {
+      // Get cards from params
+      const cardList = getCardList();
+      console.log("📋 Card list from params:", cardList.length, "items");
+      
+      // Use cards from vocabulary params or create empty array
+      const cardsToUse = cardList.length > 0 ? cardList : [];
+      
+      console.log("🃏 Cards to use:", cardsToUse.length);
+      console.log("🃏 First card sample:", cardsToUse[0] ? {
+        id: cardsToUse[0].id,
+        front: cardsToUse[0].front,
+        back: cardsToUse[0].back,
+        reading: cardsToUse[0].reading
+      } : 'No cards available');
+      
+      setCards(cardsToUse);
+      console.log("✅ Initialized cards for study session:", cardsToUse.length);
+      
       setSessionStats({
-        total: shuffledCards.length,
+        total: cardsToUse.length,
         correct: 0,
         wrong: 0,
-        remaining: shuffledCards.length,
+        remaining: cardsToUse.length,
       });
 
       // Initialize card progress
       const progressMap = new Map<string, CardProgress>();
-      shuffledCards.forEach((card) => {
+      cardsToUse.forEach((card) => {
         progressMap.set(
           card.id,
           srsAlgorithm.initializeCardProgress(card.id, "current_user")
@@ -81,7 +113,8 @@ export default function FlashCardStudyScreen() {
     };
 
     initializeSession();
-  }, [deck]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.vocabulary]);
 
   // Get current card
   const currentCard = cards[currentCardIndex];
@@ -93,7 +126,9 @@ export default function FlashCardStudyScreen() {
     "Total cards:",
     cards.length,
     "Current card:",
-    currentCard?.id
+    currentCard?.id,
+    "Front:", currentCard?.front,
+    "Back:", currentCard?.back
   );
 
   // Handle card flip
@@ -117,8 +152,9 @@ export default function FlashCardStudyScreen() {
       });
       console.log("🚀 Speech.speak called successfully from screen");
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error("💥 Error calling Speech.speak from screen:", error);
-      Alert.alert("Speech Error", `Could not play audio: ${error.message}`);
+      Alert.alert("Speech Error", `Could not play audio: ${errorMessage}`);
     }
   }, []);
 
@@ -214,7 +250,7 @@ export default function FlashCardStudyScreen() {
       setSessionStats((prev) => ({
         ...prev,
         correct: wasCorrect ? prev.correct + 1 : prev.correct,
-        wrong: !wasCorrect ? prev.wrong + 1 : prev.wrong,
+        wrong: wasCorrect ? prev.wrong : prev.wrong + 1,
         remaining: prev.remaining - 1,
       }));
 
@@ -264,7 +300,7 @@ export default function FlashCardStudyScreen() {
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.deckTitle}>{deck.name}</Text>
+          <Text style={styles.deckTitle}>{params.title || 'Flashcard Study'}</Text>
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
               <View
