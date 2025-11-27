@@ -3,47 +3,47 @@
  * Manages categories from Firebase Firestore
  */
 
-import { collection, doc, getDoc, getDocs, orderBy, query, where } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "../config/firebase";
+import { CategoryDocument } from "../types/category";
+const CATEGORY_COLLECTION = "categories";
 
-export interface FirebaseCategory {
-  id: string;
-  name_en: string;
-  name_vi: string;
-  description: string;
-  icon: string;
-  priority: 'high' | 'medium' | 'low';
-  color: string;
-  vocabulary_count: number;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
-}
-
-const CATEGORY_COLLECTION = 'categories';
-
-export class FirebaseCategoryService {
+export class CategoryService {
   /**
    * Get all active categories from Firebase
    */
-  static async getAllCategories(): Promise<FirebaseCategory[]> {
+  static async getAllCategoriesByLevel(
+    jlptLevel?: string
+  ): Promise<CategoryDocument[]> {
     try {
-      const q = query(
-        collection(db, CATEGORY_COLLECTION),
-        where('isActive', '==', true),
-        orderBy('priority', 'desc')
-      );
-      
+      const constraints = [
+        where("isActive", "==", true),
+        orderBy("priority", "desc"),
+      ];
+      if (jlptLevel) {
+        constraints.unshift(where("jlptLevel", "==", jlptLevel));
+      }
+      const q = query(collection(db, CATEGORY_COLLECTION), ...constraints);
       const snapshot = await getDocs(q);
-      const categories = snapshot.docs.map(doc => ({
+      console.log(
+        `📚 Found ${snapshot.docs.length} categories by level ${
+          jlptLevel || "all"
+        } from Firebase`
+      );
+      return snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
-      })) as FirebaseCategory[];
-
-      console.log(`📚 Found ${categories.length} categories from Firebase`);
-      return categories;
+        ...doc.data(),
+      })) as CategoryDocument[];
     } catch (error) {
-      console.error('❌ Failed to get categories from Firebase:', error);
+      console.error("❌ Failed to get categories from Firebase:", error);
       return [];
     }
   }
@@ -51,21 +51,25 @@ export class FirebaseCategoryService {
   /**
    * Get categories by priority
    */
-  static async getCategoriesByPriority(priority: 'high' | 'medium' | 'low'): Promise<FirebaseCategory[]> {
+  static async getCategoriesByPriority(
+    priority: "high" | "medium" | "low"
+  ): Promise<CategoryDocument[]> {
     try {
       const q = query(
         collection(db, CATEGORY_COLLECTION),
-        where('isActive', '==', true),
-        where('priority', '==', priority)
+        where("isActive", "==", true),
+        where("priority", "==", priority)
       );
-      
-      const snapshot = await getDocs(q);
-      const categories = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as FirebaseCategory[];
 
-      console.log(`🎯 Found ${categories.length} ${priority} priority categories`);
+      const snapshot = await getDocs(q);
+      const categories = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as CategoryDocument[];
+
+      console.log(
+        `🎯 Found ${categories.length} ${priority} priority categories`
+      );
       return categories;
     } catch (error) {
       console.error(`❌ Failed to get ${priority} priority categories:`, error);
@@ -76,20 +80,22 @@ export class FirebaseCategoryService {
   /**
    * Get category by ID
    */
-  static async getCategoryById(categoryId: string): Promise<FirebaseCategory | null> {
+  static async getCategoryById(
+    categoryId: string
+  ): Promise<CategoryDocument | null> {
     try {
       const docRef = doc(db, CATEGORY_COLLECTION, categoryId);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         return {
           id: docSnap.id,
-          ...docSnap.data()
-        } as FirebaseCategory;
+          ...docSnap.data(),
+        } as CategoryDocument;
       }
       return null;
     } catch (error) {
-      console.error('❌ Failed to get category by ID:', error);
+      console.error("❌ Failed to get category by ID:", error);
       return null;
     }
   }
@@ -97,23 +103,27 @@ export class FirebaseCategoryService {
   /**
    * Get recommended categories for beginners (high priority first)
    */
-  static async getRecommendedCategories(limit: number = 6): Promise<FirebaseCategory[]> {
+  static async getRecommendedCategories(
+    limit: number = 6
+  ): Promise<CategoryDocument[]> {
     try {
       // Get high priority categories first
-      const highPriority = await this.getCategoriesByPriority('high');
-      
+      const highPriority = await this.getCategoriesByPriority("high");
+
       if (highPriority.length >= limit) {
         return highPriority.slice(0, limit);
       }
-      
+
       // If not enough high priority, add medium priority
-      const mediumPriority = await this.getCategoriesByPriority('medium');
+      const mediumPriority = await this.getCategoriesByPriority("medium");
       const recommended = [...highPriority, ...mediumPriority];
-      
-      console.log(`🌟 Recommended ${Math.min(limit, recommended.length)} categories`);
+
+      console.log(
+        `🌟 Recommended ${Math.min(limit, recommended.length)} categories`
+      );
       return recommended.slice(0, limit);
     } catch (error) {
-      console.error('❌ Failed to get recommended categories:', error);
+      console.error("❌ Failed to get recommended categories:", error);
       return [];
     }
   }
@@ -126,27 +136,27 @@ export class FirebaseCategoryService {
     byPriority: Record<string, number>;
   }> {
     try {
-      const categories = await this.getAllCategories();
-      
+      const categories = await this.getAllCategoriesByLevel();
+
       const stats = {
         total: categories.length,
         byPriority: {
-          high: categories.filter(c => c.priority === 'high').length,
-          medium: categories.filter(c => c.priority === 'medium').length,
-          low: categories.filter(c => c.priority === 'low').length,
-        }
+          high: categories.filter((c) => c.priority === "high").length,
+          medium: categories.filter((c) => c.priority === "medium").length,
+          low: categories.filter((c) => c.priority === "low").length,
+        },
       };
-      
-      console.log('📊 Category stats calculated:', stats);
+
+      console.log("📊 Category stats calculated:", stats);
       return stats;
     } catch (error) {
-      console.error('❌ Failed to get category stats:', error);
+      console.error("❌ Failed to get category stats:", error);
       return {
         total: 0,
-        byPriority: { high: 0, medium: 0, low: 0 }
+        byPriority: { high: 0, medium: 0, low: 0 },
       };
     }
   }
 }
 
-export default FirebaseCategoryService;
+export default CategoryService;

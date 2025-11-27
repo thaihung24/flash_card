@@ -3,18 +3,18 @@
  * Screen to import vocabulary data into Firebase
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { BORDER_RADIUS, COLORS, FONTS, SPACING } from '../constants/theme';
-import { VocabularyImportService } from '../services/vocabularyImportService';
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { BORDER_RADIUS, COLORS, FONTS, SPACING } from "../constants/theme";
+import { VocabularyImportService } from "../services/vocabularyService";
 
 export const VocabularyImportScreen: React.FC = () => {
   const [importing, setImporting] = useState(false);
@@ -30,25 +30,27 @@ export const VocabularyImportScreen: React.FC = () => {
       setImporting(true);
       setResults(null);
 
-      const importResults = await VocabularyImportService.importFromFile(jsonData);
+      const importResults = await VocabularyImportService.importFromFile(
+        jsonData
+      );
       setResults(importResults);
 
       if (importResults.success) {
         Alert.alert(
-          'Import Successful',
+          "Import Successful",
           `Successfully imported ${importResults.imported} vocabulary items!`,
-          [{ text: 'OK' }]
+          [{ text: "OK" }]
         );
       } else {
         Alert.alert(
-          'Import Failed',
+          "Import Failed",
           `Failed to import ${importResults.failed} items. Check the error log.`,
-          [{ text: 'OK' }]
+          [{ text: "OK" }]
         );
       }
     } catch (error) {
-      console.error('Import error:', error);
-      Alert.alert('Error', 'Failed to import vocabulary. Please try again.');
+      console.error("Import error:", error);
+      Alert.alert("Error", "Failed to import vocabulary. Please try again.");
     } finally {
       setImporting(false);
     }
@@ -56,12 +58,12 @@ export const VocabularyImportScreen: React.FC = () => {
 
   const handlePasteAndImport = () => {
     Alert.prompt(
-      'Import Vocabulary',
-      'Paste your JSON data:',
+      "Import Vocabulary",
+      "Paste your JSON data:",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Import',
+          text: "Import",
           onPress: (jsonData?: string) => {
             if (jsonData) {
               handleImport(jsonData);
@@ -69,31 +71,31 @@ export const VocabularyImportScreen: React.FC = () => {
           },
         },
       ],
-      'plain-text'
+      "plain-text"
     );
   };
 
   const handleDeleteAll = () => {
     Alert.alert(
-      'Delete All Vocabulary',
-      'Are you sure you want to delete ALL vocabulary items? This action cannot be undone!',
+      "Delete All Vocabulary",
+      "Are you sure you want to delete ALL vocabulary items? This action cannot be undone!",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete All',
-          style: 'destructive',
+          text: "Delete All",
+          style: "destructive",
           onPress: async () => {
             try {
               setImporting(true);
               const result = await VocabularyImportService.deleteAll();
               Alert.alert(
-                'Delete Complete',
+                "Delete Complete",
                 `Deleted ${result.deleted} items`,
-                [{ text: 'OK' }]
+                [{ text: "OK" }]
               );
             } catch (err) {
-              console.error('Delete error:', err);
-              Alert.alert('Error', 'Failed to delete vocabulary');
+              console.error("Delete error:", err);
+              Alert.alert("Error", "Failed to delete vocabulary");
             } finally {
               setImporting(false);
             }
@@ -138,17 +140,26 @@ export const VocabularyImportScreen: React.FC = () => {
             <Text style={styles.resultsTitle}>Import Results</Text>
             <View style={styles.resultRow}>
               <Text style={styles.resultLabel}>Success:</Text>
-              <Text style={[styles.resultValue, results.success ? styles.successText : styles.errorText]}>
-                {results.success ? 'Yes' : 'No'}
+              <Text
+                style={[
+                  styles.resultValue,
+                  results.success ? styles.successText : styles.errorText,
+                ]}
+              >
+                {results.success ? "Yes" : "No"}
               </Text>
             </View>
             <View style={styles.resultRow}>
               <Text style={styles.resultLabel}>Imported:</Text>
-              <Text style={[styles.resultValue, styles.successText]}>{results.imported}</Text>
+              <Text style={[styles.resultValue, styles.successText]}>
+                {results.imported}
+              </Text>
             </View>
             <View style={styles.resultRow}>
               <Text style={styles.resultLabel}>Failed:</Text>
-              <Text style={[styles.resultValue, styles.errorText]}>{results.failed}</Text>
+              <Text style={[styles.resultValue, styles.errorText]}>
+                {results.failed}
+              </Text>
             </View>
 
             {results.errors.length > 0 && (
@@ -175,15 +186,15 @@ export const VocabularyImportScreen: React.FC = () => {
                 {
                   documents: [
                     {
-                      id: 'n5-001',
-                      category: 'pronoun',
-                      kanji: '私',
-                      kana: 'わたし',
-                      romaji: 'watashi',
-                      meaning_vi: 'tôi',
-                      pos: 'pronoun',
-                      notes: 'Trang trọng',
-                      jlpt: 'N5',
+                      id: "n5-001",
+                      category: "pronoun",
+                      kanji: "私",
+                      kana: "わたし",
+                      romaji: "watashi",
+                      meaning_vi: "tôi",
+                      pos: "pronoun",
+                      notes: "Trang trọng",
+                      jlpt: "N5",
                     },
                   ],
                 },
@@ -224,7 +235,7 @@ const styles = StyleSheet.create({
   button: {
     padding: SPACING.lg,
     borderRadius: BORDER_RADIUS.md,
-    alignItems: 'center',
+    alignItems: "center",
   },
   primaryButton: {
     backgroundColor: COLORS.primary,
@@ -249,8 +260,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   resultRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: SPACING.sm,
   },
   resultLabel: {
@@ -302,7 +313,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.sm,
   },
   codeText: {
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
     fontSize: FONTS.sizes.sm,
     color: COLORS.white,
   },

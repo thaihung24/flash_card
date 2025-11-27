@@ -3,27 +3,27 @@
  * Allow users to choose study categories
  */
 
-import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { BORDER_RADIUS, COLORS, FONTS, SPACING } from '../constants/theme';
-import { CategoryService } from '../services/categoryService';
-import { VocabularyImportService } from '../services/vocabularyImportService';
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { BORDER_RADIUS, COLORS, FONTS, SPACING } from "../constants/theme";
+import { CategoryService } from "../services/categoryService";
+import { VocabularyService } from "../services/vocabularyService";
 
 interface CategoryItem {
   category: string;
   count: number;
   description: string;
   icon: string;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
 }
 
 export const CategorySelectionScreen: React.FC = () => {
@@ -32,62 +32,85 @@ export const CategorySelectionScreen: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Category descriptions and icons
-  const categoryInfo: Record<string, { description: string; icon: string; priority: 'high' | 'medium' | 'low' }> = {
-    verb: { description: 'Động từ', icon: 'flash', priority: 'high' },
-    'adj-i': { description: 'Tính từ đuôi -i', icon: 'star', priority: 'high' },
-    'adj-na': { description: 'Tính từ đuôi -na', icon: 'star-outline', priority: 'medium' },
-    time: { description: 'Thời gian', icon: 'time', priority: 'high' },
-    food: { description: 'Đồ ăn', icon: 'restaurant', priority: 'high' },
-    home: { description: 'Nhà cửa', icon: 'home', priority: 'high' },
-    family: { description: 'Gia đình', icon: 'people', priority: 'high' },
-    school: { description: 'Trường học', icon: 'school', priority: 'medium' },
-    place: { description: 'Địa điểm', icon: 'location', priority: 'medium' },
-    transport: { description: 'Giao thông', icon: 'car', priority: 'medium' },
-    people: { description: 'Con người', icon: 'person', priority: 'medium' },
-    body: { description: 'Cơ thể', icon: 'body', priority: 'medium' },
-    clothes: { description: 'Quần áo', icon: 'shirt', priority: 'low' },
-    weather: { description: 'Thời tiết', icon: 'partly-sunny', priority: 'low' },
-    nature: { description: 'Tự nhiên', icon: 'leaf', priority: 'low' },
-    devices: { description: 'Thiết bị', icon: 'phone-portrait', priority: 'medium' },
-    kitchen: { description: 'Nhà bếp', icon: 'restaurant-outline', priority: 'low' },
-    color: { description: 'Màu sắc', icon: 'color-palette', priority: 'low' },
-    number: { description: 'Số đếm', icon: 'calculator', priority: 'medium' },
-    counter: { description: 'Từ đếm', icon: 'list', priority: 'medium' },
-    pronoun: { description: 'Đại từ', icon: 'chatbox', priority: 'medium' },
-    particle: { description: 'Trợ từ', icon: 'link', priority: 'medium' },
-    adv: { description: 'Trạng từ', icon: 'arrow-forward', priority: 'medium' },
-    conj: { description: 'Liên từ', icon: 'git-branch', priority: 'low' },
-    expr: { description: 'Biểu thức', icon: 'chatbubble', priority: 'medium' },
-    expression: { description: 'Cách diễn đạt', icon: 'chatbubbles', priority: 'medium' },
-    question: { description: 'Câu hỏi', icon: 'help-circle', priority: 'low' },
-    abstract: { description: 'Khái niệm', icon: 'bulb', priority: 'medium' },
-    general: { description: 'Chung', icon: 'grid', priority: 'low' },
-    extra: { description: 'Bổ sung', icon: 'add-circle', priority: 'low' },
-    money: { description: 'Tiền bạc', icon: 'card', priority: 'low' },
+  const categoryInfo: Record<
+    string,
+    { description: string; icon: string; priority: "high" | "medium" | "low" }
+  > = {
+    verb: { description: "Động từ", icon: "flash", priority: "high" },
+    "adj-i": { description: "Tính từ đuôi -i", icon: "star", priority: "high" },
+    "adj-na": {
+      description: "Tính từ đuôi -na",
+      icon: "star-outline",
+      priority: "medium",
+    },
+    time: { description: "Thời gian", icon: "time", priority: "high" },
+    food: { description: "Đồ ăn", icon: "restaurant", priority: "high" },
+    home: { description: "Nhà cửa", icon: "home", priority: "high" },
+    family: { description: "Gia đình", icon: "people", priority: "high" },
+    school: { description: "Trường học", icon: "school", priority: "medium" },
+    place: { description: "Địa điểm", icon: "location", priority: "medium" },
+    transport: { description: "Giao thông", icon: "car", priority: "medium" },
+    people: { description: "Con người", icon: "person", priority: "medium" },
+    body: { description: "Cơ thể", icon: "body", priority: "medium" },
+    clothes: { description: "Quần áo", icon: "shirt", priority: "low" },
+    weather: {
+      description: "Thời tiết",
+      icon: "partly-sunny",
+      priority: "low",
+    },
+    nature: { description: "Tự nhiên", icon: "leaf", priority: "low" },
+    devices: {
+      description: "Thiết bị",
+      icon: "phone-portrait",
+      priority: "medium",
+    },
+    kitchen: {
+      description: "Nhà bếp",
+      icon: "restaurant-outline",
+      priority: "low",
+    },
+    color: { description: "Màu sắc", icon: "color-palette", priority: "low" },
+    number: { description: "Số đếm", icon: "calculator", priority: "medium" },
+    counter: { description: "Từ đếm", icon: "list", priority: "medium" },
+    pronoun: { description: "Đại từ", icon: "chatbox", priority: "medium" },
+    particle: { description: "Trợ từ", icon: "link", priority: "medium" },
+    adv: { description: "Trạng từ", icon: "arrow-forward", priority: "medium" },
+    conj: { description: "Liên từ", icon: "git-branch", priority: "low" },
+    expr: { description: "Biểu thức", icon: "chatbubble", priority: "medium" },
+    expression: {
+      description: "Cách diễn đạt",
+      icon: "chatbubbles",
+      priority: "medium",
+    },
+    question: { description: "Câu hỏi", icon: "help-circle", priority: "low" },
+    abstract: { description: "Khái niệm", icon: "bulb", priority: "medium" },
+    general: { description: "Chung", icon: "grid", priority: "low" },
+    extra: { description: "Bổ sung", icon: "add-circle", priority: "low" },
+    money: { description: "Tiền bạc", icon: "card", priority: "low" },
   };
 
   useEffect(() => {
     loadCategories();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCategories = async () => {
     try {
       setLoading(true);
       const categoryStats = await CategoryService.getCategoryStats();
-      
+
       const categoriesWithInfo = categoryStats.map(({ category, count }) => ({
         category,
         count,
         description: categoryInfo[category]?.description || category,
-        icon: categoryInfo[category]?.icon || 'folder',
-        priority: categoryInfo[category]?.priority || 'low',
+        icon: categoryInfo[category]?.icon || "folder",
+        priority: categoryInfo[category]?.priority || "low",
       }));
 
       setCategories(categoriesWithInfo);
     } catch (error) {
-      console.error('Failed to load categories:', error);
-      Alert.alert('Error', 'Failed to load categories');
+      console.error("Failed to load categories:", error);
+      Alert.alert("Error", "Failed to load categories");
     } finally {
       setLoading(false);
     }
@@ -96,28 +119,30 @@ export const CategorySelectionScreen: React.FC = () => {
   const handleCategorySelect = async (categoryItem: CategoryItem) => {
     try {
       setSelectedCategory(categoryItem.category);
-      
+
       // Get vocabulary for this category
-      const vocabularyItems = await VocabularyImportService.getByCategory(categoryItem.category);
-      
+      const vocabularyItems = await VocabularyService.getByCategory(
+        categoryItem.category
+      );
+
       Alert.alert(
         `${categoryItem.description} (${categoryItem.category})`,
         `Found ${vocabularyItems.length} vocabulary items.\n\nStart studying this category?`,
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: "Cancel", style: "cancel" },
           {
-            text: 'Study Now',
+            text: "Study Now",
             onPress: () => {
               // Navigate to study screen with this category
-              console.log('Start studying category:', categoryItem.category);
+              console.log("Start studying category:", categoryItem.category);
               // TODO: Navigate to FlashCardStudy screen with filtered data
             },
           },
         ]
       );
     } catch (err) {
-      console.error('Failed to load vocabulary:', err);
-      Alert.alert('Error', 'Failed to load vocabulary for this category');
+      console.error("Failed to load vocabulary:", err);
+      Alert.alert("Error", "Failed to load vocabulary for this category");
     } finally {
       setSelectedCategory(null);
     }
@@ -125,25 +150,33 @@ export const CategorySelectionScreen: React.FC = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return COLORS.success;
-      case 'medium': return COLORS.warning;
-      case 'low': return COLORS.gray[400];
-      default: return COLORS.gray[400];
+      case "high":
+        return COLORS.success;
+      case "medium":
+        return COLORS.warning;
+      case "low":
+        return COLORS.gray[400];
+      default:
+        return COLORS.gray[400];
     }
   };
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case 'high': return 'Ưu tiên cao';
-      case 'medium': return 'Trung bình';
-      case 'low': return 'Bổ sung';
-      default: return '';
+      case "high":
+        return "Ưu tiên cao";
+      case "medium":
+        return "Trung bình";
+      case "low":
+        return "Bổ sung";
+      default:
+        return "";
     }
   };
 
   const renderCategoryItem = ({ item }: { item: CategoryItem }) => {
     const isSelected = selectedCategory === item.category;
-    
+
     return (
       <TouchableOpacity
         style={[
@@ -156,10 +189,10 @@ export const CategorySelectionScreen: React.FC = () => {
       >
         <View style={styles.cardHeader}>
           <View style={styles.iconContainer}>
-            <Ionicons 
-              name={item.icon as any} 
-              size={24} 
-              color={getPriorityColor(item.priority)} 
+            <Ionicons
+              name={item.icon as any}
+              size={24}
+              color={getPriorityColor(item.priority)}
             />
           </View>
           <View style={styles.cardInfo}>
@@ -171,12 +204,19 @@ export const CategorySelectionScreen: React.FC = () => {
             <Text style={styles.countLabel}>từ</Text>
           </View>
         </View>
-        
+
         <View style={styles.cardFooter}>
-          <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(item.priority) }]}>
-            <Text style={styles.priorityText}>{getPriorityLabel(item.priority)}</Text>
+          <View
+            style={[
+              styles.priorityBadge,
+              { backgroundColor: getPriorityColor(item.priority) },
+            ]}
+          >
+            <Text style={styles.priorityText}>
+              {getPriorityLabel(item.priority)}
+            </Text>
           </View>
-          
+
           {isSelected && (
             <ActivityIndicator size="small" color={COLORS.primary} />
           )}
@@ -189,20 +229,27 @@ export const CategorySelectionScreen: React.FC = () => {
     <View style={styles.header}>
       <Text style={styles.title}>Chọn chủ đề học</Text>
       <Text style={styles.subtitle}>
-        {categories.length} chủ đề • {categories.reduce((sum, cat) => sum + cat.count, 0)} từ vựng
+        {categories.length} chủ đề •{" "}
+        {categories.reduce((sum, cat) => sum + cat.count, 0)} từ vựng
       </Text>
-      
+
       <View style={styles.legendContainer}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: COLORS.success }]} />
+          <View
+            style={[styles.legendDot, { backgroundColor: COLORS.success }]}
+          />
           <Text style={styles.legendText}>Ưu tiên cao</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: COLORS.warning }]} />
+          <View
+            style={[styles.legendDot, { backgroundColor: COLORS.warning }]}
+          />
           <Text style={styles.legendText}>Trung bình</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: COLORS.gray[400] }]} />
+          <View
+            style={[styles.legendDot, { backgroundColor: COLORS.gray[400] }]}
+          />
           <Text style={styles.legendText}>Bổ sung</Text>
         </View>
       </View>
@@ -239,8 +286,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: SPACING.md,
@@ -265,15 +312,15 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   legendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     backgroundColor: COLORS.white,
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
   },
   legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   legendDot: {
     width: 8,
@@ -297,8 +344,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gray[100],
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: SPACING.md,
   },
   iconContainer: {
@@ -306,8 +353,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: COLORS.gray[100],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: SPACING.md,
   },
   cardInfo: {
@@ -323,7 +370,7 @@ const styles = StyleSheet.create({
     color: COLORS.gray[500],
   },
   countContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   countText: {
     fontSize: FONTS.sizes.lg,
@@ -335,9 +382,9 @@ const styles = StyleSheet.create({
     color: COLORS.gray[500],
   },
   cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   priorityBadge: {
     paddingHorizontal: SPACING.sm,
