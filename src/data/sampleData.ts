@@ -2,7 +2,7 @@
  * Sample Japanese FlashCard Data for Testing
  */
 
-import { CardCategory, Deck, DifficultyLevel, FlashCard } from '../types';
+import { CardCategory, Deck, DifficultyLevel, FlashCard, FlashCardDocument } from '../types';
 
 export const sampleFlashCards: FlashCard[] = [
   // N5 Basic Vocabulary
@@ -351,7 +351,7 @@ export const getCardsByDifficulty = (difficulty: DifficultyLevel): FlashCard[] =
 };
 
 // Helper function to shuffle cards for study session
-export const shuffleCards = (cards: FlashCard[]): FlashCard[] => {
+export const shuffleCards = (cards: FlashCardDocument[]): FlashCardDocument[] => {
   const shuffled = [...cards];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

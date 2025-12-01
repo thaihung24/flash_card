@@ -23,6 +23,7 @@ import {
   CardProgress,
   Deck,
   FlashCard,
+  FlashCardDocument,
   StudyResult,
   SwipeDirection,
 } from "../types";
@@ -43,7 +44,7 @@ export const FlashCardStudyScreen: React.FC<FlashCardStudyScreenProps> = ({
 }) => {
   // State management
   const [deck, setDeck] = useState<Deck | null>(null);
-  const [cards, setCards] = useState<FlashCard[]>([]);
+  const [cards, setCards] = useState<FlashCardDocument[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
   const [sessionStats, setSessionStats] = useState({

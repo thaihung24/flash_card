@@ -6,33 +6,33 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import React, { useEffect, useState } from "react";
 import {
-    Dimensions,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-    interpolate,
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 import {
-    BORDER_RADIUS,
-    COLORS,
-    FONTS,
-    SHADOWS,
-    SPACING,
+  BORDER_RADIUS,
+  COLORS,
+  FONTS,
+  SHADOWS,
+  SPACING,
 } from "../constants/theme";
-import { FlashCard, SwipeDirection } from "../types";
+import { FlashCardDocument, SwipeDirection } from "../types";
 
 interface FlashCardComponentProps {
-  card: FlashCard;
+  card: FlashCardDocument;
   onSwipe: (direction: SwipeDirection) => void;
   onFlip: () => void;
   onSpeak?: (text: string) => void;
@@ -77,11 +77,11 @@ export const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
     // Debug logging
     console.log("🃏 FlashCard data:", {
       id: card.id,
-      front: card.front,
-      back: card.back,
-      reading: card.reading,
+      front: card.kanji,
+      back: card.kana,
+      reading: card.romaji,
       isFlipped: isFlipped,
-      showBack: showBack
+      showBack: showBack,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card.id]);
@@ -289,10 +289,10 @@ export const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
             >
               <View style={styles.cardContent}>
                 <Text style={styles.cardTextFront}>
-                  {card.front || "No front text"}
+                  {card.kanji || card.kana}
                 </Text>
-                {card.reading && (
-                  <Text style={styles.readingText}>{card.reading}</Text>
+                {card.kana && (
+                  <Text style={styles.readingText}>{card.kana}</Text>
                 )}
               </View>
             </TouchableOpacity>
@@ -329,10 +329,10 @@ export const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
 
               <View style={styles.cardContent}>
                 <Text style={styles.cardTextBack}>
-                  {card.back || "No back text"}
+                  {card.meaning_vi || "No back text"}
                 </Text>
                 <Text style={styles.originalText}>
-                  {card.front || "No front text"}
+                  {card.kanji || card.kana || "No front text"}
                 </Text>
               </View>
 
@@ -350,7 +350,7 @@ export const FlashCardComponent: React.FC<FlashCardComponentProps> = ({
           style={styles.speakButton}
           onPress={() => {
             console.log("🔊 Speaker button pressed directly");
-            handleSpeak(card.front);
+            handleSpeak(card.kana as string);
           }}
           hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     color: COLORS.gray[800],
     textAlign: "center",
     marginBottom: SPACING.md,
-    backgroundColor: "rgba(255,0,0,0.1)", // Debug background
+    // backgroundColor: "rgba(255,0,0,0.1)", // Debug background
     // fontFamily: FONTS.japanese, // Temporarily removed for debugging
   },
   cardTextBack: {
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     textAlign: "center",
     marginBottom: SPACING.sm,
-    backgroundColor: "rgba(0,255,0,0.2)", // Debug green background
+    // backgroundColor: "rgba(0,255,0,0.2)", // Debug green background
   },
   readingText: {
     fontSize: FONTS.sizes.lg,

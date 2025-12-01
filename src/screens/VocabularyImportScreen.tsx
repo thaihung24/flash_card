@@ -14,7 +14,7 @@ import {
   View,
 } from "react-native";
 import { BORDER_RADIUS, COLORS, FONTS, SPACING } from "../constants/theme";
-import { VocabularyImportService } from "../services/vocabularyService";
+import { VocabularyService } from "../services/vocabularyService";
 
 export const VocabularyImportScreen: React.FC = () => {
   const [importing, setImporting] = useState(false);
@@ -30,9 +30,7 @@ export const VocabularyImportScreen: React.FC = () => {
       setImporting(true);
       setResults(null);
 
-      const importResults = await VocabularyImportService.importFromFile(
-        jsonData
-      );
+      const importResults = await VocabularyService.importFromFile(jsonData);
       setResults(importResults);
 
       if (importResults.success) {
@@ -87,7 +85,7 @@ export const VocabularyImportScreen: React.FC = () => {
           onPress: async () => {
             try {
               setImporting(true);
-              const result = await VocabularyImportService.deleteAll();
+              const result = await VocabularyService.deleteAll();
               Alert.alert(
                 "Delete Complete",
                 `Deleted ${result.deleted} items`,

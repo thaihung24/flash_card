@@ -14,7 +14,7 @@ import { shuffleCards } from "../data/sampleData";
 import {
   CardProgress,
   DifficultyLevel,
-  FlashCard,
+  FlashCardDocument,
   StudyResult,
   SwipeDirection,
 } from "../types";
@@ -24,12 +24,15 @@ import { srsAlgorithm } from "../utils/srsAlgorithm";
 export default function SimpleFlashCardStudyScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const getCardList = (): FlashCard[] => {
-    console.log("🚀 getCardList called with params.vocabulary:", params.vocabulary);
-    
+  const getCardList = (): FlashCardDocument[] => {
+    console.log(
+      "🚀 getCardList called with params.vocabulary:",
+      params.vocabulary
+    );
+
     // Parse vocabulary from params if it's a string
     let vocabularyList = params.vocabulary;
-    if (typeof params.vocabulary === 'string') {
+    if (typeof params.vocabulary === "string") {
       try {
         vocabularyList = JSON.parse(params.vocabulary);
       } catch (error) {
@@ -37,29 +40,34 @@ export default function SimpleFlashCardStudyScreen() {
         return [];
       }
     }
-    
+
     // Check if it's an array and map to FlashCard format
     if (vocabularyList && Array.isArray(vocabularyList)) {
-      console.log("✅ Found vocabulary array with", vocabularyList.length, "items");
-      return (vocabularyList as unknown as VocabularyDocument[]).map((item: VocabularyDocument, index: number) => ({
-        id: item.id || index.toString(),
-        front: item.kanji || item.kana || '', // Japanese text
-        back: item.meaning_vi || '', // Vietnamese meaning
-        reading: item.romaji || item.kana || '', // Reading
-        audio: '', // No audio for now
-        difficulty: DifficultyLevel.INTERMEDIATE,
-        tags: [item.jlpt || 'N5', item.pos || 'unknown'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
+      console.log(
+        "✅ Found vocabulary array with",
+        vocabularyList.length,
+        "items"
+      );
+      return (vocabularyList as unknown as VocabularyDocument[]).map(
+        (item: VocabularyDocument, index: number) => ({
+          id: item.id || index.toString(),
+          kanji: item.kanji || "", // kanji text
+          kana: item.kana || "", // Kana text
+          romaji: item.romaji || "", // Reading,
+          meaning_vi: item.meaning_vi || "", // Vietnamese meaning
+          audio: "", // No audio for now
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          tags: [item.jlpt || "N5", item.pos || "unknown"],
+        })
+      );
     }
-    
+
     console.log("⚠️ No valid vocabulary data found");
     return [];
   };
 
   // State
-  const [cards, setCards] = useState<FlashCard[]>([]);
+  const [cards, setCards] = useState<FlashCardDocument[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
   const [sessionStats, setSessionStats] = useState({
@@ -79,21 +87,26 @@ export default function SimpleFlashCardStudyScreen() {
       // Get cards from params
       const cardList = getCardList();
       console.log("📋 Card list from params:", cardList.length, "items");
-      
+
       // Use cards from vocabulary params or create empty array
       const cardsToUse = cardList.length > 0 ? cardList : [];
-      
+
       console.log("🃏 Cards to use:", cardsToUse.length);
-      console.log("🃏 First card sample:", cardsToUse[0] ? {
-        id: cardsToUse[0].id,
-        front: cardsToUse[0].front,
-        back: cardsToUse[0].back,
-        reading: cardsToUse[0].reading
-      } : 'No cards available');
-      
+      console.log(
+        "🃏 First card sample:",
+        cardsToUse[0]
+          ? {
+              id: cardsToUse[0].id,
+              kanji: cardsToUse[0].kanji,
+              kana: cardsToUse[0].kana,
+              reading: cardsToUse[0].romaji,
+            }
+          : "No cards available"
+      );
+
       setCards(cardsToUse);
       console.log("✅ Initialized cards for study session:", cardsToUse.length);
-      
+
       setSessionStats({
         total: cardsToUse.length,
         correct: 0,
@@ -127,8 +140,10 @@ export default function SimpleFlashCardStudyScreen() {
     cards.length,
     "Current card:",
     currentCard?.id,
-    "Front:", currentCard?.front,
-    "Back:", currentCard?.back
+    "Front:",
+    currentCard?.kanji,
+    "Back:",
+    currentCard?.kana
   );
 
   // Handle card flip
@@ -152,7 +167,8 @@ export default function SimpleFlashCardStudyScreen() {
       });
       console.log("🚀 Speech.speak called successfully from screen");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       console.error("💥 Error calling Speech.speak from screen:", error);
       Alert.alert("Speech Error", `Could not play audio: ${errorMessage}`);
     }
@@ -300,7 +316,9 @@ export default function SimpleFlashCardStudyScreen() {
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.deckTitle}>{params.title || 'Flashcard Study'}</Text>
+          <Text style={styles.deckTitle}>
+            {params.title || "Flashcard Study"}
+          </Text>
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
               <View

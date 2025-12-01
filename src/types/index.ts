@@ -13,7 +13,17 @@ export interface FlashCard {
   createdAt: Date;
   updatedAt: Date;
 }
-
+export interface FlashCardDocument {
+  id: string;
+  kanji?: string;
+  kana?: string;
+  romaji?: string;
+  meaning_vi?: string;
+  pos?: string; // Part of speech
+  notes?: string;
+  difficulty?: DifficultyLevel;
+  tags?: string[];
+}
 export interface Deck {
   id: string;
   name: string;
@@ -65,50 +75,50 @@ export interface UserStudyStats {
 
 // Enums
 export enum DifficultyLevel {
-  BEGINNER = 'beginner',
-  INTERMEDIATE = 'intermediate',
-  ADVANCED = 'advanced',
-  EXPERT = 'expert'
+  BEGINNER = "beginner",
+  INTERMEDIATE = "intermediate",
+  ADVANCED = "advanced",
+  EXPERT = "expert",
 }
 
 export enum CardCategory {
-  N5 = 'N5',
-  N4 = 'N4',
-  N3 = 'N3',
-  N2 = 'N2',
-  N1 = 'N1',
-  HIRAGANA = 'hiragana',
-  KATAKANA = 'katakana',
-  KANJI = 'kanji',
-  VERB = 'verb',
-  ADJECTIVE = 'adjective',
-  NOUN = 'noun',
-  NUMBERS = 'numbers',
-  DAILY_LIFE = 'daily_life',
-  FAMILY = 'family',
-  FOOD = 'food',
-  TRAVEL = 'travel',
-  BUSINESS = 'business',
-  CUSTOM = 'custom'
+  N5 = "N5",
+  N4 = "N4",
+  N3 = "N3",
+  N2 = "N2",
+  N1 = "N1",
+  HIRAGANA = "hiragana",
+  KATAKANA = "katakana",
+  KANJI = "kanji",
+  VERB = "verb",
+  ADJECTIVE = "adjective",
+  NOUN = "noun",
+  NUMBERS = "numbers",
+  DAILY_LIFE = "daily_life",
+  FAMILY = "family",
+  FOOD = "food",
+  TRAVEL = "travel",
+  BUSINESS = "business",
+  CUSTOM = "custom",
 }
 
 export enum UserLevel {
-  BEGINNER = 'beginner',
-  INTERMEDIATE = 'intermediate',
-  ADVANCED = 'advanced',
-  EXPERT = 'expert'
+  BEGINNER = "beginner",
+  INTERMEDIATE = "intermediate",
+  ADVANCED = "advanced",
+  EXPERT = "expert",
 }
 
 export enum SwipeDirection {
-  LEFT = 'left',
-  RIGHT = 'right',
-  UP = 'up',
-  DOWN = 'down'
+  LEFT = "left",
+  RIGHT = "right",
+  UP = "up",
+  DOWN = "down",
 }
 
 export enum CardSide {
-  FRONT = 'front',
-  BACK = 'back'
+  FRONT = "front",
+  BACK = "back",
 }
 
 // SRS Algorithm Types
@@ -181,8 +191,8 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 // Audio Types
 export interface AudioSettings {
   enabled: boolean;
-  voice: 'male' | 'female';
+  voice: "male" | "female";
   speed: number; // 0.5 - 2.0
   pitch: number; // 0.5 - 2.0
-  language: 'ja-JP' | 'ja';
+  language: "ja-JP" | "ja";
 }
